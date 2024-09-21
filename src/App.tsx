@@ -47,7 +47,15 @@ const events = [
 const first = events[0].date;
 const range = events[events.length - 1].date - events[0].date;
 
-export function Marker({ children, zoom, ...props }) {
+export function Marker({
+  children,
+  zoom,
+  ...props
+}: {
+  children: any;
+  zoom: number;
+  [key: string]: any;
+}) {
   const scale = (1 / zoom) * 20;
   return (
     <group {...props}>
