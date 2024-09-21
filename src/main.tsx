@@ -3,6 +3,8 @@ import { Canvas } from '@react-three/fiber'
 
 import { Box } from './Box'
 
+import "./index.css";
+
 createRoot(document.getElementById('root')!).render(
   <Canvas>
     <ambientLight intensity={Math.PI / 2} />
