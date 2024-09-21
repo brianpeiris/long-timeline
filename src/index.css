@@ -1,2 +1,10 @@
-:root {
+html, body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: black;
+}
+#root {
+  height: 100%;
 }

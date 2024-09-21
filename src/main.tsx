@@ -1,16 +1,21 @@
-import { createRoot } from 'react-dom/client'
-import { Canvas } from '@react-three/fiber'
+import { createRoot } from "react-dom/client";
+import { Canvas } from "@react-three/fiber";
 
-import { Box } from './Box'
+import { App } from "./App";
 
 import "./index.css";
 
-createRoot(document.getElementById('root')!).render(
-  <Canvas>
-    <ambientLight intensity={Math.PI / 2} />
-    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-    <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-    <Box position={[-1.2, 0, 0]} />
-    <Box position={[1.2, 0, 0]} />
+createRoot(document.getElementById("root")!).render(
+  <Canvas
+    orthographic
+    camera={{
+      position: [0, 0, 50],
+      zoom: 50,
+      near: 0.01,
+      far: 10000,
+      up: [0, 0, 1],
+    }}
+  >
+    <App />
   </Canvas>,
-)
+);
