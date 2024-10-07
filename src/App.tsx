@@ -1,61 +1,40 @@
-import { useState } from "react";
-import { useThree, useFrame } from "@react-three/fiber";
-import { MapControls, Plane, Text } from "@react-three/drei";
+import React, { useEffect, useState } from "react";
+import { useThree, useFrame, GroupProps } from "@react-three/fiber";
+import { Image, MapControls, Plane, Text } from "@react-three/drei";
 
-const events = [
-  { name: "Earth forms", date: -4_600_000_000 },
-  { name: "Cellular life", date: -3_800_000_000 },
-  { name: "First plants", date: -3_000_000_000 },
-  { name: "Cambrian explosion", date: -538_000_000 },
-  { name: "Extinction event", date: -66_000_000 },
-  { name: "Stone tools", date: -3_300_000 },
-  { name: "Australopithecus", date: -3_200_000 },
-  { name: "Homo habilis", date: -2_300_000 },
-  { name: "Homo erectus", date: -1_600_000 },
-  { name: "Neanderthals", date: -600_000 },
-  { name: "Homo sapiens", date: -300_000 },
-  { name: "Cave paintings", date: -50000 },
-  { name: "Natufian culture", date: -12000 },
-  { name: "Gobekli Tepe", date: -9500 },
-  { name: "Cuneform", date: -3300 },
-  { name: "Initial stonehenge", date: -3000 },
-  { name: "First pyramid", date: -2600 },
-  { name: "Stonehenge", date: -2200 },
-  { name: "Last mammoths", date: -2000 },
-  { name: "Mycenaean", date: -1700 },
-  { name: "Last pyramid", date: -1500 },
-  { name: "Bronze age collapse", date: -1200 },
-  { name: "Nok Culture", date: -1000 },
-  { name: "Kushites", date: -780 },
-  { name: "Confucius", date: -500 },
-  { name: "Ancient Great Wall", date: -440 },
-  { name: "Aristotle", date: -340 },
-  { name: "Cleopatra", date: -40 },
-  { name: "Marcus Aurelius", date: 160 },
-  { name: "Constantine Byzantium", date: 330 },
-  { name: "Fall of Rome", date: 476 },
-  { name: "Aryabhata mathematician", date: 500 },
-  { name: "Bagan, Burma", date: 900 },
-  { name: "Angkor Wat", date: 1150 },
-  { name: "Lalibela, Ethiopia", date: 1200 },
-  { name: "Machu Picchu", date: 1400 },
-  { name: "Modern Great Wall", date: 1500 },
-  { name: "Eiffel tower", date: 1888 },
-  { name: "Man on moon", date: 1969 },
-  { name: "Now", date: 2024 },
-];
+import events from "./events";
+
 const first = events[0].date;
 const range = events[events.length - 1].date - events[0].date;
 
+function formatDate(date: number) {
+  if (date >= 0) {
+    return `${date} CE`;
+  } else if (date > -10000) {
+    return `${-date} BCE`;
+  } else {
+    return `${(-date).toLocaleString()} BCE`;
+  }
+}
+
+interface MarkerProps extends GroupProps {
+  children: React.ReactNode;
+  link?: string;
+  image?: string;
+  zoom: number;
+  onActiveChanged: (active: boolean) => void;
+  active: boolean;
+}
+
 export function Marker({
   children,
+  link,
+  image,
   zoom,
+  onActiveChanged,
+  active,
   ...props
-}: {
-  children: any;
-  zoom: number;
-  [key: string]: any;
-}) {
+}: MarkerProps) {
   const scale = (1 / zoom) * 20;
   return (
     <group {...props}>
@@ -65,29 +44,77 @@ export function Marker({
         rotation={[0, 0, 45]}
         scale={[scale, scale, scale]}
         anchorX="left"
+        onPointerOver={() => onActiveChanged(true)}
+        onPointerOut={() => onActiveChanged(false)}
+        onPointerUp={() => link && window.open(link)}
+        color={active ? "red" : "white"}
       >
         {children}
       </Text>
+      {active && image && (
+        <>
+          <Plane
+            rotation={[0, 0, Math.PI / 4]}
+            position={[0, -4.8 * scale, 0]}
+            scale={5 * scale}
+          />
+          <Plane
+            position={[0, -8.0 * scale, 0]}
+            scale={10.4 * scale}
+          />
+          <Image
+            url={`/images/${image}`}
+            scale={10 * scale}
+            position={[0, -8 * scale, 0.1]}
+          />
+        </>
+      )}
     </group>
   );
 }
 
 export function App() {
   const camera = useThree((state) => state.camera);
-  const [zoom, setZoom] = useState(1);
-  useFrame(() => {
-    setZoom(camera.zoom);
-  });
+  const [zoom, setZoom] = useState(0.0012);
+  const [active, setActive] = useState<number | null>(null);
+  useFrame(() => setZoom(camera.zoom));
+  useEffect(() => {
+    camera.zoom = zoom;
+    camera.updateProjectionMatrix();
+  }, []);
+  useEffect(() => {
+    document.body.style.cursor = active === null ? "auto" : "pointer";
+  }, [active]);
+  function handleMarkerActiveChanged(i: number, newActive: boolean) {
+    setActive((active) => (newActive ? i : active === i ? null : active));
+  }
+  const dateScale = 100;
+  const numParts = 200;
+  const partWidth = range / dateScale / numParts;
+  const baselineParts = Array.from({ length: numParts }, (_, i) => (
+    <Plane
+      key={i}
+      args={[partWidth, 2 / zoom]}
+      position={[i * partWidth + first / dateScale + partWidth / 2, 0, 0]}
+    ></Plane>
+  ));
   return (
     <>
-      <MapControls />
-      <Plane
-        args={[range / 100, 2 / zoom]}
-        position={[range / 100 / 2 + first / 100, 0, 0]}
-      ></Plane>
+      <MapControls enableRotate={false} zoomSpeed={2} />
+      {baselineParts}
       {events.map((event, i) => (
-        <Marker key={i} position={[event.date / 100, 0, 0]} zoom={zoom}>
-          {event.date} - {event.name}
+        <Marker
+          key={i}
+          position={[event.date / dateScale, 0, 0]}
+          zoom={zoom}
+          onActiveChanged={(newActive) =>
+            handleMarkerActiveChanged(i, newActive)
+          }
+          active={active === i}
+          link={event.link}
+          image={event.image}
+        >
+          {formatDate(event.date)} - {event.name}
         </Marker>
       ))}
     </>

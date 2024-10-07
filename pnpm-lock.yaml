@@ -51,6 +51,9 @@ importers:
       eslint-plugin-react-refresh:
         specifier: ^0.4.6
         version: 0.4.6(eslint@8.57.0)
+      three-stdlib:
+        specifier: 2.33.0
+        version: 2.33.0(three@0.163.0)
       typescript:
         specifier: ^5.2.2
         version: 5.4.5
