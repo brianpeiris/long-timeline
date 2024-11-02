@@ -63,7 +63,7 @@ export function Marker({
             scale={10.4 * scale}
           />
           <Image
-            url={`/images/${image}`}
+            url={`./images/${image}`}
             scale={10 * scale}
             position={[0, -8 * scale, 0.1]}
           />
@@ -75,7 +75,7 @@ export function Marker({
 
 export function App() {
   const camera = useThree((state) => state.camera);
-  const [zoom, setZoom] = useState(0.0012);
+  const [zoom, setZoom] = useState(30);
   const [active, setActive] = useState<number | null>(null);
   useFrame(() => setZoom(camera.zoom));
   useEffect(() => {
